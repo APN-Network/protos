@@ -1,0 +1,44 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 APN
+// SPDX-License-Identifier: MIT
+
+syntax = "proto3";
+package proto;
+option go_package = "github.com/APN-Network/node/internal/proto";
+
+message Lease {
+  uint64 ends = 1;
+}
+
+message Property {
+  uint64 ends = 1;
+  string country = 2;
+  string ip = 4;
+  uint32 port = 5;
+  uint64 metered = 6;
+  uint64 expires = 7;
+}
+
+message Peer {
+  bytes ip = 1;
+  uint32 port = 2;
+  string country = 3;
+  uint64 metered = 4;
+  uint64 expires = 5;
+}
+
+message Pong {
+  uint64 timestamp = 1;
+  Lease lease = 2;
+  repeated Property properties = 3;
+  int64 dropped = 4;
+  uint32 load = 5;
+  uint32 clients = 6;
+  uint32 queue = 7;
+  uint32 version = 8;
+  uint32 brothers = 9;
+  int64 slow_writes = 10;
+  int64 max_depth = 11;
+  int64 rtt = 12;
+  repeated Peer servers = 13;
+  uint64 expires = 14;
+}

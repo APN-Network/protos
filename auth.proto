@@ -1,0 +1,15 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 APN
+// SPDX-License-Identifier: MIT
+
+syntax = "proto3";
+package proto;
+option go_package = "github.com/APN-Network/node/internal/proto";
+
+message Auth {
+  bytes client_id = 1;
+  uint32 timestamp = 2;
+  bytes hmac = 3;
+  string device = 4;
+  string locale = 5;
+  bytes padding = 6;
+}

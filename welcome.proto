@@ -1,0 +1,20 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 APN
+// SPDX-License-Identifier: MIT
+
+syntax = "proto3";
+package proto;
+option go_package = "github.com/APN-Network/node/internal/proto";
+
+enum Status {
+  OK = 0;
+  ERROR = 1;
+}
+
+message Welcome {
+  Status status = 1;
+  string major = 5;
+  uint32 minor = 6;
+  bytes ip = 2;
+  string error = 3;
+  bytes padding = 4;
+}

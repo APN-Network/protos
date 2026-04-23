@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 APN
+# SPDX-License-Identifier: MIT
+
+*.pb.go
+*.pb.swift
+*.xcodeproj
+*.xcworkspace
+.build/
+.claude/
+.DS_Store
+.idea/
+.swiftpm/
+build/
+DerivedData/
+node_modules/
+Package.resolved
+platform.info
+proto/
+PROTOCOL.md
+target/
+xcuserdata/
