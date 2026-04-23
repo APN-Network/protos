@@ -3,7 +3,6 @@
 
 syntax = "proto3";
 package proto;
-option go_package = "github.com/APN-Network/node/internal/proto";
 
 enum Status {
   OK = 0;
