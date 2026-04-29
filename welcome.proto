@@ -16,4 +16,5 @@ message Welcome {
   bytes ip = 2;
   string error = 3;
   bytes padding = 4;
+  bytes home = 7;
 }
