@@ -6,4 +6,5 @@ package proto;
 
 message Ping {
   uint64 timestamp = 1;
+  map<string, uint32> canaries = 2;
 }
