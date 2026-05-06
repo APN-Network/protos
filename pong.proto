@@ -29,15 +29,9 @@ message Pong {
   uint64 timestamp = 1;
   Lease lease = 2;
   repeated Property properties = 3;
-  int64 dropped = 4;
-  uint32 load = 5;
-  uint32 clients = 6;
-  uint32 queue = 7;
-  uint32 version = 8;
-  uint32 brothers = 9;
-  int64 slow_writes = 10;
-  int64 max_depth = 11;
-  int64 rtt = 12;
+  reserved 4 to 12;
   repeated Peer servers = 13;
   uint64 expires = 14;
+  uint64 cutoff = 15;
+  map<string, int64> gauges = 16;
 }
