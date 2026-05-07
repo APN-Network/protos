@@ -4,34 +4,137 @@
 syntax = "proto3";
 package proto;
 
+// Lease describes the client's paid subscription as known to the
+// Hub. An empty Lease (ends == 0) means the client is on the free
+// tier and is bound by the rolling free-quota window enforced via
+// Pong.cutoff.
 message Lease {
+  // Unix timestamp (seconds) at which the paid plan stops covering
+  // the client. While `ends > now` the client is unmetered and the
+  // Node ignores the free-quota check; once `ends <= now` the
+  // client is treated as free-tier.
   uint64 ends = 1;
 }
 
+// Property is one purchased "country slot": a country the client is
+// entitled to route through. The slot is attached to a particular
+// Node for the duration of that Node's life and re-attached when
+// the Node is rotated out.
 message Property {
+  // Unix timestamp (seconds) at which the slot itself expires —
+  // i.e. when the customer's purchase runs out. Independent of the
+  // life of the underlying Node (see `expires`).
   uint64 ends = 1;
+
+  // ISO 3166-1 alpha-2 country code of the slot ("US", "DE", …).
   string country = 2;
+
+  // Public IPv4 of the Node currently backing this slot, in dotted
+  // form ("203.0.113.7"). Empty / "0.0.0.0" while the slot is
+  // detached.
   string ip = 4;
+
+  // TCP port to dial on the backing Node. Always 443 in production
+  // but kept explicit so a Node may move to a different port
+  // without a client release.
   uint32 port = 5;
+
+  // Unix timestamp (seconds) of the most recent telemetry record
+  // received by the Hub from the backing Node — i.e. "last seen
+  // alive". Zero means the Node has never reported. Clients warn
+  // if the gap to wall-clock time grows beyond a few minutes.
   uint64 metered = 6;
+
+  // Unix timestamp (seconds) at which the backing Node will be
+  // decommissioned. Distinct from `ends`: the slot can outlive the
+  // Node, in which case the Hub re-attaches it to a fresh Node and
+  // the client receives an updated Property.
   uint64 expires = 7;
 }
 
+// Peer describes one sibling Node in the fleet, advertised to
+// clients so they can rotate to a different exit when their current
+// Node nears expiry.
 message Peer {
+  // Public IPv4 of the peer as four raw bytes (network byte order).
   bytes ip = 1;
+
+  // TCP port on which the peer accepts client connections.
   uint32 port = 2;
+
+  // ISO 3166-1 alpha-2 country code where the peer is hosted.
   string country = 3;
+
+  // Unix timestamp (seconds) of the peer's most recent telemetry
+  // report at the Hub — same semantics as Property.metered.
   uint64 metered = 4;
+
+  // Unix timestamp (seconds) at which the peer is scheduled for
+  // decommission.
   uint64 expires = 5;
 }
 
+// Pong is the Node's reply to a Ping. It both acknowledges the
+// keep-alive and ferries fresh state from the Hub (lease,
+// properties, fleet) so the client UI can stay current without a
+// separate channel.
 message Pong {
+  // Echo of Ping.timestamp, used by the client to compute RTT.
   uint64 timestamp = 1;
+
+  // Current lease snapshot for this client. Always present; an
+  // empty Lease means free tier.
   Lease lease = 2;
+
+  // Current set of country slots owned by this client.
   repeated Property properties = 3;
+
+  // Field numbers 4..12 were used by earlier protocol revisions
+  // and must not be re-purposed.
   reserved 4 to 12;
+
+  // Other Nodes in the fleet, advertised so that the client can
+  // pick a fallback when the current Node is about to expire.
   repeated Peer servers = 13;
+
+  // Unix timestamp (seconds) at which *this* Node — the one
+  // answering the Ping — will be decommissioned. The client uses
+  // it to migrate to a peer before the Node disappears.
   uint64 expires = 14;
+
+  // Frontier of the client's free-tier budget, encoded as a single
+  // Unix timestamp (seconds). The client interprets it relative to
+  // its local clock `now`:
+  //
+  //   * Paid client (lease still active):
+  //       cutoff == lease.ends.
+  //
+  //   * Free-tier client still inside the 15-minute free window:
+  //       cutoff > now.
+  //       (cutoff - now) is the time left before the free window
+  //       runs out.
+  //
+  //   * Free-tier client past the free window (cooldown):
+  //       cutoff <= now.
+  //       (now - cutoff) is the time left in the 45-minute
+  //       cooldown before a fresh free window opens.
+  //
+  // The single field encodes both the "free for X more" and "free
+  // again in X" UI states; the sign of (cutoff - now) selects
+  // which one to render. The Node recomputes this on every Pong,
+  // so the value drifts forward in real time and the client must
+  // not cache it across pings.
   uint64 cutoff = 15;
+
+  // Free-form Node-side metrics surfaced to the client for
+  // diagnostics and server-pick heuristics. Known keys:
+  //   "load"     — Node CPU/throughput pressure, percent × 100.
+  //   "clients"  — current number of connected clients.
+  //   "version"  — Node build number (matches Welcome.minor).
+  //   "brothers" — size of the advertised peer set.
+  //   "stalls"   — count of slow socket writes seen for this
+  //                client since connect (back-pressure signal).
+  //   "rtt"      — last measured round-trip time, in milliseconds.
+  // Unknown keys must be ignored by the client.
   map<string, int64> gauges = 16;
 }

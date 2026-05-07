@@ -4,7 +4,21 @@
 syntax = "proto3";
 package proto;
 
+// Ping is sent by the client at a regular interval (a few seconds)
+// to keep the tunnel alive, drive RTT measurement, and piggyback
+// reachability reports about peer Nodes. The Node answers each Ping
+// with a Pong.
 message Ping {
+  // Client clock at the moment the Ping was prepared, in
+  // milliseconds since the Unix epoch. The Node echoes it back in
+  // Pong.timestamp so that the client can compute round-trip time
+  // without keeping per-request state.
   uint64 timestamp = 1;
+
+  // Per-peer probe-failure counters accumulated since the previous
+  // Ping. The key is the peer Node's IPv4 address in dotted form
+  // ("203.0.113.7"); the value is the number of probes that failed
+  // (timeouts, refusals, etc.). Forwarded to the Hub so that
+  // unreachable Nodes can be retired.
   map<string, uint32> canaries = 2;
 }
