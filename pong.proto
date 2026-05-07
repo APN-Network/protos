@@ -119,6 +119,13 @@ message Pong {
   //       (now - cutoff) is the time left in the 45-minute
   //       cooldown before a fresh free window opens.
   //
+  //   * Hub state not yet loaded (transient, briefly after Auth
+  //     while the Node is fetching the client record from the
+  //     Hub): cutoff is set to `now + 365d` as a placeholder.
+  //     Clients should treat any cutoff more than a few days in
+  //     the future as "no information yet" rather than a real
+  //     free-window deadline.
+  //
   // The single field encodes both the "free for X more" and "free
   // again in X" UI states; the sign of (cutoff - now) selects
   // which one to render. The Node recomputes this on every Pong,
