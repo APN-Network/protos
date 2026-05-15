@@ -50,4 +50,10 @@ message Welcome {
   // public Internet. The client compares this to its local view to
   // detect NAT and to populate analytics.
   bytes home = 7;
+
+  // Node ID of the responding Node, taken verbatim from its APN_NID
+  // environment variable. The value carries a short prefix followed
+  // by a colon (e.g. "VLZ:" or "HTZ:") that the client surfaces in
+  // diagnostics and the tunnel header to hint at the hosting region.
+  string nid = 8;
 }
