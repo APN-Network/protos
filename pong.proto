@@ -30,8 +30,9 @@ message Property {
   string country = 2;
 
   // Public IPv4 of the Node currently backing this slot, in dotted
-  // form ("203.0.113.7"). Empty / "0.0.0.0" while the slot is
-  // detached.
+  // form ("203.0.113.7"). Deprecated in favor of `ip_bytes`, but
+  // kept during client migration. Empty / "0.0.0.0" while the slot
+  // is detached.
   string ip = 4;
 
   // TCP port to dial on the backing Node. Always 443 in production
@@ -50,6 +51,11 @@ message Property {
   // Node, in which case the Hub re-attaches it to a fresh Node and
   // the client receives an updated Property.
   uint64 expires = 7;
+
+  // Public IPv4 of the Node currently backing this slot as four raw
+  // bytes in network byte order, matching Peer.ip, Welcome.ip, and
+  // Welcome.home. Empty while the slot is detached.
+  bytes ip_bytes = 8;
 }
 
 // Peer describes one sibling Node in the fleet, advertised to

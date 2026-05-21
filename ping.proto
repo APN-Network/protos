@@ -16,9 +16,10 @@ message Ping {
   uint64 timestamp = 1;
 
   // Per-peer probe-failure counters accumulated since the previous
-  // Ping. The key is the peer Node's IPv4 address in dotted form
-  // ("203.0.113.7"); the value is the number of probes that failed
-  // (timeouts, refusals, etc.). Forwarded to the Hub so that
+  // Ping. The key is the peer Node's IPv4 address derived from
+  // Property.ip_bytes / Peer.ip, not the deprecated Property.ip
+  // dotted-string field; the value is the number of probes that
+  // failed (timeouts, refusals, etc.). Forwarded to the Hub so that
   // unreachable Nodes can be retired.
   map<string, uint32> canaries = 2;
 }
