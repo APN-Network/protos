@@ -72,6 +72,14 @@ message Peer {
   // Unix timestamp (seconds) at which the peer is scheduled for
   // decommission.
   uint64 expires = 5;
+
+  // TLS Server Name Indication the peer presents on its endpoint.
+  // The client must put this exact hostname in the ClientHello SNI
+  // when dialing the peer, so the handshake blends in with ordinary
+  // HTTPS traffic to a popular domain ("github.com", "apple.com", …).
+  // Assigned at random by the Hub when the Node is created and stable
+  // for the life of that Node.
+  string sni = 6;
 }
 
 // Pong is the Node's reply to a Ping. It both acknowledges the
