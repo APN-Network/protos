@@ -39,8 +39,14 @@ message Auth {
   bytes padding = 6;
 
   // Version of the APN client software sending the request, in the
-  // form "<platform>/<semver>" (e.g. "iOS/1.1.1" or "Android/1.1.1").
-  // Forwarded by the Node to the Hub for usage analytics; not used
-  // for authentication.
+  // form "<platform>/<semver>", where the platform names the store
+  // the build was released to (e.g. "iOS/1.1.1", "Android/1.1.1",
+  // or "Huawei/1.1.1"). Forwarded by the Node to the Hub for usage
+  // analytics; not used for authentication.
   string version = 7;
+
+  // Screen dimension of the client device in physical pixels, in the
+  // form "<width>x<height>" (e.g. "1179x2556"). Forwarded by the Node
+  // to the Hub for usage analytics; not used for authentication.
+  string screen = 8;
 }
