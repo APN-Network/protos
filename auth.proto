@@ -37,4 +37,10 @@ message Auth {
   // across sessions. Defeats traffic-analysis fingerprinting of the
   // Auth frame; the Node ignores the contents.
   bytes padding = 6;
+
+  // Version of the APN client software sending the request, in the
+  // form "<platform>/<semver>" (e.g. "iOS/1.1.1" or "Android/1.1.1").
+  // Forwarded by the Node to the Hub for usage analytics; not used
+  // for authentication.
+  string version = 7;
 }
