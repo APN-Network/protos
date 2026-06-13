@@ -7,7 +7,7 @@ package proto;
 // Lease describes the client's paid subscription as known to the
 // Hub. An empty Lease (ends == 0) means the client is on the free
 // tier and is bound by the rolling free-quota window enforced via
-// Pong.cutoff.
+// Pong.cutoff and Pong.cooldown.
 message Lease {
   // Unix timestamp (seconds) at which the paid plan stops covering
   // the client. While `ends > now` the client is unmetered and the
@@ -110,36 +110,54 @@ message Pong {
   // it to migrate to a peer before the Node disappears.
   uint64 expires = 14;
 
-  // Frontier of the client's free-tier budget, encoded as a single
-  // Unix timestamp (seconds). The client interprets it relative to
-  // its local clock `now`:
+  // Fixed Unix timestamp (seconds) at which the client's free-tier
+  // service grant ends. Unlike earlier revisions this is a stable
+  // moment computed from server-side state, not a value that drifts
+  // between Pongs, so the client may cache it and reason about it
+  // offline. It describes the free tier only:
   //
-  //   * Paid client (lease still active):
-  //       cutoff == lease.ends.
-  //
-  //   * Free-tier client still inside the 15-minute free window:
+  //   * Free-tier client inside the free window:
   //       cutoff > now.
-  //       (cutoff - now) is the time left before the free window
-  //       runs out.
+  //       (cutoff - now) is the time left before the window runs
+  //       out — render "free for X more".
   //
-  //   * Free-tier client past the free window (cooldown):
+  //   * Free-tier client past the free window:
   //       cutoff <= now.
-  //       (now - cutoff) is the time left in the 45-minute
-  //       cooldown before a fresh free window opens.
+  //       The client is cut off and must wait until `cooldown`
+  //       (see below) before a fresh free window opens.
+  //
+  //   * Paid client (lease.ends > now):
+  //       cutoff is set far in the future (now + 365d). The
+  //       free-tier line is irrelevant; the client renders
+  //       "Paid until ..." from `lease` instead.
   //
   //   * Hub state not yet loaded (transient, briefly after Auth
   //     while the Node is fetching the client record from the
-  //     Hub): cutoff is set to `now + 365d` as a placeholder.
-  //     Clients should treat any cutoff more than a few days in
-  //     the future as "no information yet" rather than a real
-  //     free-window deadline.
+  //     Hub): cutoff is set far in the future (now + 365d) as a
+  //     placeholder.
   //
-  // The single field encodes both the "free for X more" and "free
-  // again in X" UI states; the sign of (cutoff - now) selects
-  // which one to render. The Node recomputes this on every Pong,
-  // so the value drifts forward in real time and the client must
-  // not cache it across pings.
+  // Clients should treat any cutoff more than a few days in the
+  // future as "no free-tier deadline" rather than a real window
+  // end, which covers both the paid and not-yet-loaded cases.
   uint64 cutoff = 15;
+
+  // Fixed Unix timestamp (seconds) at which the client may next use
+  // the service for free — i.e. the moment the cooldown that
+  // follows an exhausted free window ends (cutoff + 45 minutes for
+  // free-tier clients). Like `cutoff` it is a stable moment that
+  // does not drift between Pongs, so the client caches it and
+  // renders a precise countdown:
+  //
+  //   * cutoff <= now < cooldown: the client is cooling down;
+  //     (cooldown - now) is the wait before a fresh free window —
+  //     render "free in X".
+  //
+  //   * now >= cooldown: the cooldown has elapsed; render "try to
+  //     connect anyway".
+  //
+  // For paid clients and the not-yet-loaded placeholder it is set
+  // far in the future alongside `cutoff` and carries no meaning.
+  uint64 cooldown = 17;
 
   // Free-form Node-side metrics surfaced to the client for
   // diagnostics and server-pick heuristics. Known keys:
