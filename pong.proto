@@ -168,6 +168,8 @@ message Pong {
   //   "stalls"   — count of slow socket writes seen for this
   //                client since connect (back-pressure signal).
   //   "rtt"      — last measured round-trip time, in milliseconds.
+  //   "ppm"      — packets per minute, in and out across all
+  //                tunnels over the trailing minute.
   // Unknown keys must be ignored by the client.
   map<string, int64> gauges = 16;
 }
