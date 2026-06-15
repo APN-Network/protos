@@ -50,6 +50,14 @@ message Property {
   // Node, in which case the Hub re-attaches it to a fresh Node and
   // the client receives an updated Property.
   uint64 expires = 7;
+
+  // TLS Server Name Indication the backing Node presents on its
+  // endpoint. The client must put this exact hostname in the
+  // ClientHello SNI when dialing the slot's Node, so the handshake
+  // blends in with ordinary HTTPS traffic. Same semantics as
+  // Peer.sni; assigned by the Hub and stable for the life of the
+  // backing Node. Empty while the slot is detached.
+  string sni = 8;
 }
 
 // Peer describes one sibling Node in the fleet, advertised to
