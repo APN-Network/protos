@@ -169,7 +169,7 @@ message Pong {
 
   // Free-form Node-side metrics surfaced to the client for
   // diagnostics and server-pick heuristics. Known keys:
-  //   "SLA"      — Node CPU/throughput pressure, percent × 100.
+  //   "SLA"      — Node 1-minute Unix load average × 100.
   //   "clients"  — current number of connected clients.
   //   "version"  — Node build number (matches Welcome.minor).
   //   "brothers" — size of the advertised peer set.
