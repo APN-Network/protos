@@ -3,6 +3,7 @@
 
 syntax = "proto3";
 package proto;
+option go_package = "github.com/APN-Network/protos;apnproto";
 
 // Outcome of the Node's check of the preceding Auth message.
 enum Status {
