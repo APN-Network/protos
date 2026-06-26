@@ -178,7 +178,7 @@ message Pong {
   //   "rtt"      — last measured round-trip time, in milliseconds.
   //   "PPM"      — packets per minute, in and out across all
   //                tunnels over the trailing minute.
-  //   "MEM"      — resident memory of the Node process, in kB.
+  //   "MEM"      — resident memory of the Node process, in MB.
   // Unknown keys must be ignored by the client.
   map<string, int64> gauges = 16;
 }
