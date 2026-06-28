@@ -21,9 +21,10 @@ enum Status {
 
 // Welcome is the Node's reply to Auth. It is sent exactly once per
 // session, immediately after the Node decides whether to accept the
-// client. On OK the client switches to tunnel mode and begins
-// exchanging IP/Ping/Pong frames; on STATUS_UNSPECIFIED or ERROR
-// it disconnects.
+// client. On OK the client configures its TUN interface with the
+// assigned ip/prefix and switches to tunnel mode, exchanging
+// IP/Ping/Pong frames; on STATUS_UNSPECIFIED or ERROR it
+// disconnects.
 message Welcome {
   // Whether the Node accepted the Auth message. Clients MUST reject
   // STATUS_UNSPECIFIED as a protocol error (truncated / malformed
@@ -43,7 +44,8 @@ message Welcome {
   // IPv4 address (4 raw bytes, network byte order) assigned to the
   // client inside the tunnel for the lifetime of this session. The
   // client uses it as the source address of every encapsulated IPv4
-  // packet; IPv6 packets use `ip6` instead.
+  // packet; IPv6 packets use `ip6` instead. The CIDR prefix length
+  // for this address is carried in `prefix` (field 11).
   bytes ip = 2;
 
   // IPv6 address (16 raw bytes) assigned to the client inside the
@@ -51,6 +53,13 @@ message Welcome {
   // The client uses it as the source of every encapsulated IPv6
   // packet. Empty when the Node offers no IPv6 tunnel.
   bytes ip6 = 9;
+
+  // CIDR prefix length (1–32) for the tunnel IP in `ip` (field 2).
+  // Required for TUN interface configuration; every implementation
+  // MUST use this value rather than a hardcoded subnet. Zero means
+  // the field was not populated — clients MUST treat a zero prefix
+  // as a malformed Welcome and disconnect.
+  uint32 prefix = 11;
 
   // Free-form error message explaining why authentication failed.
   // Set only when `status == ERROR`; empty otherwise.
