@@ -6,20 +6,28 @@ package proto;
 
 // Outcome of the Node's check of the preceding Auth message.
 enum Status {
+  // Zero-value sentinel. Proto3 defaults missing / unrecognised enum
+  // fields to 0, so a truncated Welcome would otherwise deserialise
+  // as OK. Clients MUST reject STATUS_UNSPECIFIED as a hard error.
+  STATUS_UNSPECIFIED = 0;
+
   // Authentication succeeded; the rest of the Welcome carries the
   // assigned tunnel address.
-  OK = 0;
+  OK = 1;
 
   // Authentication failed; see Welcome.error for the reason.
-  ERROR = 1;
+  ERROR = 2;
 }
 
 // Welcome is the Node's reply to Auth. It is sent exactly once per
 // session, immediately after the Node decides whether to accept the
 // client. On OK the client switches to tunnel mode and begins
-// exchanging IP/Ping/Pong frames; on ERROR it disconnects.
+// exchanging IP/Ping/Pong frames; on STATUS_UNSPECIFIED or ERROR
+// it disconnects.
 message Welcome {
-  // Whether the Node accepted the Auth message.
+  // Whether the Node accepted the Auth message. Clients MUST reject
+  // STATUS_UNSPECIFIED as a protocol error (truncated / malformed
+  // frame).
   Status status = 1;
 
   // Human-readable build tag of the Node, e.g. "1.2.3"; surfaced in
