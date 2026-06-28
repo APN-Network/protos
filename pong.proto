@@ -122,31 +122,40 @@ message Pong {
   // service grant ends. Unlike earlier revisions this is a stable
   // moment computed from server-side state, not a value that drifts
   // between Pongs, so the client may cache it and reason about it
-  // offline. It describes the free tier only:
+  // offline.
   //
-  //   * Free-tier client inside the free window:
-  //       cutoff > now.
-  //       (cutoff - now) is the time left before the window runs
-  //       out — render "free for X more".
+  // Semantics by value:
   //
-  //   * Free-tier client past the free window:
-  //       cutoff <= now.
-  //       The client is cut off and must wait until `cooldown`
-  //       (see below) before a fresh free window opens.
+  //   cutoff == SENTINEL (UINT64_MAX)
+  //       Hub state not yet loaded (transient, briefly after Auth
+  //       while the Node is fetching the client record from the
+  //       Hub). The client SHOULD act as if no free-tier information
+  //       is available yet and await the next Pong.
   //
-  //   * Paid client (lease.ends > now):
-  //       cutoff is set far in the future (now + 365d). The
-  //       free-tier line is irrelevant; the client renders
-  //       "Paid until ..." from `lease` instead.
+  //   cutoff <= now
+  //       Free-tier client past the free window—cut off. Render
+  //       "free in X" using `cooldown` (see below).
   //
-  //   * Hub state not yet loaded (transient, briefly after Auth
-  //     while the Node is fetching the client record from the
-  //     Hub): cutoff is set far in the future (now + 365d) as a
-  //     placeholder.
+  //   now < cutoff < SENTINEL
+  //       Three sub-cases:
   //
-  // Clients should treat any cutoff more than a few days in the
-  // future as "no free-tier deadline" rather than a real window
-  // end, which covers both the paid and not-yet-loaded cases.
+  //       a) Paid client (lease.ends > now):
+  //          cutoff == lease.ends. The free-tier line is irrelevant;
+  //          the client renders "Paid until ..." from `lease`.
+  //
+  //       b) Free-tier client inside the free window:
+  //          (cutoff - now) is the remaining time — render
+  //          "free for X more".
+  //
+  //       c) Free-tier placeholder (should not happen in practice
+  //          after the initial loading Pong, but client handles it
+  //          the same as b).
+  //
+  // Protocol constant — clients MUST compare against the exact
+  // sentinel value (UINT64_MAX / 0xFFFFFFFFFFFFFFFF) rather than
+  // using a range check, so that a genuine paid-plan timestamp
+  // (which may be years into the future) is never mistaken for the
+  // loading placeholder.
   uint64 cutoff = 15;
 
   // Fixed Unix timestamp (seconds) at which the client may next use
@@ -163,8 +172,9 @@ message Pong {
   //   * now >= cooldown: the cooldown has elapsed; render "try to
   //     connect anyway".
   //
-  // For paid clients and the not-yet-loaded placeholder it is set
-  // far in the future alongside `cutoff` and carries no meaning.
+  // When cutoff == SENTINEL (UINT64_MAX) or the client is paid
+  // (lease.ends > now), cooldown is also set to UINT64_MAX and
+  // carries no meaning.
   uint64 cooldown = 17;
 
   // Free-form Node-side metrics surfaced to the client for
