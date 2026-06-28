@@ -175,9 +175,11 @@ message Pong {
   //   "brothers" — size of the advertised peer set.
   //   "stalls"   — count of slow socket writes seen for this
   //                client since connect (back-pressure signal).
-  //   "rtt"      — last measured round-trip time, in milliseconds.
   //   "PPM"      — packets per minute, in and out across all
   //                tunnels over the trailing minute.
+  //   "TUN"      — slow TUN writes per minute on the Node side of
+  //                this client's tunnel (back-pressure signal, same
+  //                shape as PPM).
   //   "MEM"      — resident memory of the Node process, in MB.
   // Unknown keys must be ignored by the client.
   map<string, int64> gauges = 16;
