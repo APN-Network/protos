@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 APN.
+# SPDX-License-Identifier: MIT.
+
+name: ci
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-setup-action@v1
+      - run: buf lint
+  breaking:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-setup-action@v1
+      - run: buf breaking --against '.git#branch=master'
