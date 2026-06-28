@@ -32,9 +32,10 @@ message Welcome {
   // mismatch before falling back to the textual `major`.
   uint32 minor = 6;
 
-  // IPv4 address (4 raw bytes) assigned to the client inside the
-  // tunnel for the lifetime of this session. The client uses it as
-  // the source address of every encapsulated IP packet.
+  // IPv4 address (4 raw bytes, network byte order) assigned to the
+  // client inside the tunnel for the lifetime of this session. The
+  // client uses it as the source address of every encapsulated IP
+  // packet.
   bytes ip = 2;
 
   // Free-form error message explaining why authentication failed.
@@ -45,10 +46,10 @@ message Welcome {
   // across sessions, mirroring Auth.padding.
   bytes padding = 4;
 
-  // Public IPv4 (4 raw bytes) of the client as observed by the Node
-  // — i.e. the address the client appears to come from on the
-  // public Internet. The client compares this to its local view to
-  // detect NAT and to populate analytics.
+  // Public IPv4 (4 raw bytes, network byte order) of the client as
+  // observed by the Node — i.e. the address the client appears to
+  // come from on the public Internet. The client compares this to
+  // its local view to detect NAT and to populate analytics.
   bytes home = 7;
 
   // Node ID of the responding Node, taken verbatim from its APN_NID
