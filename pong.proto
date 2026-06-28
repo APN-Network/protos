@@ -179,7 +179,9 @@ message Pong {
   //   "PPM"      — packets per minute, in and out across all
   //                tunnels over the trailing minute.
   //   "MEM"      — resident memory of the Node process, in MB.
-  // Unknown keys must be ignored by the client.
+  // Unknown keys must be ignored by the client. Max 32 entries;
+  // each key MUST NOT exceed 16 bytes. Clients MUST reject a Pong
+  // carrying a gauges map that violates these bounds.
   map<string, int64> gauges = 16;
 
   // Optional diagnostic line the Node wants surfaced to the user.
