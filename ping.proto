@@ -11,9 +11,9 @@ package proto;
 message Ping {
   // Client clock at the moment the Ping was prepared, in
   // milliseconds since the Unix epoch. The Node echoes it back in
-  // Pong.timestamp so that the client can compute round-trip time
+  // Pong.timestamp_ms so that the client can compute round-trip time
   // without keeping per-request state.
-  uint64 timestamp = 1;
+  uint64 timestamp_ms = 1;
 
   // Per-peer probe-failure counters accumulated since the previous
   // Ping. The key is the peer Node's IPv4 address in dotted form

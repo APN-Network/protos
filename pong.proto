@@ -95,8 +95,8 @@ message Peer {
 // properties, fleet) so the client UI can stay current without a
 // separate channel.
 message Pong {
-  // Echo of Ping.timestamp, used by the client to compute RTT.
-  uint64 timestamp = 1;
+  // Echo of Ping.timestamp_ms, used by the client to compute RTT.
+  uint64 timestamp_ms = 1;
 
   // Current lease snapshot for this client. Always present; an
   // empty Lease means free tier.
