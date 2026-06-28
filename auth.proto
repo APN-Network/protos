@@ -10,8 +10,9 @@ package proto;
 // recovered identity to set up the tunnel session.
 message Auth {
   // Stable client identifier, exactly nine raw UTF-8 bytes; signed
-  // by the HMAC together with timestamp. Not a UUID — the Hub
-  // generates it once per installation.
+  // by the HMAC together with timestamp. Not a UUID — the client
+  // generates it once per installation using a cryptographically
+  // secure RNG and persists it across launches.
   bytes client_id = 1;
 
   // Minutes since the project epoch (2024-01-01 UTC), used as a
