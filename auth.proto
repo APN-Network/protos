@@ -10,21 +10,27 @@ package proto;
 // recovered identity to set up the tunnel session.
 message Auth {
   // Stable client identifier, exactly nine raw UTF-8 bytes; signed
-  // by the HMAC together with timestamp. Not a UUID — the Hub
+  // by the HMAC together with timestamp_ms. Not a UUID — the Hub
   // generates it once per installation.
   bytes client_id = 1;
 
-  // Minutes since the project epoch (2024-01-01 UTC), used as a
-  // replay-prevention nonce. The Node accepts the message only if
-  // this value is within one minute of its own clock.
-  uint32 timestamp = 2;
+  // Milliseconds since the Unix epoch, used as a replay-prevention
+  // nonce. The Node accepts the message only if this value is within
+  // a small clock-skew window (typically 1–2 seconds) of its own
+  // clock. Millisecond granularity ensures a unique nonce per Auth
+  // message; unlike the previous minute-based timestamp, an attacker
+  // cannot replay a captured frame at any point within a multi-minute
+  // window.
+  uint64 timestamp_ms = 2;
 
-  // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp),
-  // computed with the pre-shared key issued to this client. Proves
-  // possession of the PSK without revealing it. Receivers MUST
-  // assert len(hmac) == 12 and reject the Auth before performing any
-  // comparison; a shorter or absent value weakens authentication
-  // non-deterministically across implementations.
+  // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp_ms),
+  // computed with the pre-shared key issued to this client. The
+  // timestamp is serialised as 8 bytes in big-endian (network byte
+  // order) before concatenation. Proves possession of the PSK
+  // without revealing it. Receivers MUST assert len(hmac) == 12
+  // and reject the Auth before performing any comparison; a shorter
+  // or absent value weakens authentication non-deterministically
+  // across implementations.
   bytes hmac = 3;
 
   // Free-form device label reported by the client (e.g. "SM-G998B",
