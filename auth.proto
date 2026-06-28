@@ -9,9 +9,14 @@ package proto;
 // against its current (and previous) pre-shared key and uses the
 // recovered identity to set up the tunnel session.
 message Auth {
-  // Stable client identifier, exactly nine raw UTF-8 bytes; signed
-  // by the HMAC together with timestamp. Not a UUID — the Hub
-  // generates it once per installation.
+  // Stable client identifier. MUST be exactly nine bytes. The HMAC
+  // (field 3) covers (client_id || timestamp); any other length
+  // passes the wire and the HMAC verifies cleanly against the same
+  // non-nine-byte input on both sides, silently breaking the
+  // identity contract. Both sender and receiver MUST validate the
+  // length before computing or checking the HMAC. Not a UUID — the
+  // client generates it once per installation using a CSPRNG and
+  // persists it across launches.
   bytes client_id = 1;
 
   // Minutes since the project epoch (2024-01-01 UTC), used as a
@@ -24,7 +29,9 @@ message Auth {
   // possession of the PSK without revealing it. Receivers MUST
   // assert len(hmac) == 12 and reject the Auth before performing any
   // comparison; a shorter or absent value weakens authentication
-  // non-deterministically across implementations.
+  // non-deterministically across implementations. Implementations
+  // MUST also verify client_id is exactly 9 bytes before computing
+  // or checking this tag.
   bytes hmac = 3;
 
   // Free-form device label reported by the client (e.g. "SM-G998B",
