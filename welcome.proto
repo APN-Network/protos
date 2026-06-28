@@ -55,5 +55,8 @@ message Welcome {
   // environment variable. The value carries a short prefix followed
   // by a colon (e.g. "VLZ:" or "HTZ:") that the client surfaces in
   // diagnostics and the tunnel header to hint at the hosting region.
+  // MUST be non-empty when status == OK; an empty nid silently
+  // breaks the prefix invariant. Node implementations should refuse
+  // to start when APN_NID is unset.
   string nid = 8;
 }
