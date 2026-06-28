@@ -20,11 +20,13 @@ message Auth {
   uint32 timestamp = 2;
 
   // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp),
-  // computed with the pre-shared key issued to this client. Proves
-  // possession of the PSK without revealing it. Receivers MUST
-  // assert len(hmac) == 12 and reject the Auth before performing any
-  // comparison; a shorter or absent value weakens authentication
-  // non-deterministically across implementations.
+  // computed with the pre-shared key issued to this client. The
+  // timestamp is serialised as 4 bytes in big-endian (network byte
+  // order) before concatenation. Proves possession of the PSK
+  // without revealing it. Receivers MUST assert len(hmac) == 12
+  // and reject the Auth before performing any comparison; a shorter
+  // or absent value weakens authentication non-deterministically
+  // across implementations.
   bytes hmac = 3;
 
   // Free-form device label reported by the client (e.g. "SM-G998B",
