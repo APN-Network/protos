@@ -187,5 +187,5 @@ message Pong {
   // severity letter X ("I" info, "W" warn, "D" debug), a space,
   // then the message text. The client splits off X and logs the
   // text at that level; an unknown or missing letter means info.
-  string log = 18;
+  string notice = 18;
 }
