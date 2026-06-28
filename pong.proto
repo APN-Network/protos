@@ -181,4 +181,11 @@ message Pong {
   //   "MEM"      — resident memory of the Node process, in MB.
   // Unknown keys must be ignored by the client.
   map<string, int64> gauges = 16;
+
+  // Optional diagnostic line the Node wants surfaced to the user.
+  // Usually empty. When set, formatted as "X WWW": a single
+  // severity letter X ("I" info, "W" warn, "D" debug), a space,
+  // then the message text. The client splits off X and logs the
+  // text at that level; an unknown or missing letter means info.
+  string log = 18;
 }
