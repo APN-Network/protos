@@ -65,6 +65,8 @@ message Property {
 // Node nears expiry.
 message Peer {
   // Public IPv4 of the peer as four raw bytes (network byte order).
+  // Clients MUST convert this to dotted-decimal form
+  // ("203.0.113.7") when using the address as a Ping.canaries key.
   bytes ip = 1;
 
   // TCP port on which the peer accepts client connections.

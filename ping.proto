@@ -19,6 +19,9 @@ message Ping {
   // Ping. The key is the peer Node's IPv4 address in dotted form
   // ("203.0.113.7"); the value is the number of probes that failed
   // (timeouts, refusals, etc.). Forwarded to the Hub so that
-  // unreachable Nodes can be retired.
+  // unreachable Nodes can be retired. When producing keys from
+  // Peer.ip (four raw bytes, network byte order), the client MUST
+  // convert each byte to its decimal representation and join with
+  // dots before inserting into this map.
   map<string, uint32> canaries = 2;
 }
