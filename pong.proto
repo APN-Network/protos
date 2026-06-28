@@ -180,7 +180,7 @@ message Pong {
   //                tunnels over the trailing minute.
   //   "MEM"      — resident memory of the Node process, in MB.
   // Unknown keys must be ignored by the client.
-  map<string, int64> gauges = 16;
+  map<string, uint64> gauges = 16;
 
   // Optional diagnostic line the Node wants surfaced to the user.
   // Usually empty. When set, formatted as "X WWW": a single
