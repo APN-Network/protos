@@ -36,7 +36,8 @@ message Property {
 
   // TCP port to dial on the backing Node. Always 443 in production
   // but kept explicit so a Node may move to a different port
-  // without a client release.
+  // without a client release. Valid range 1–65535; the Hub and Node
+  // MUST reject values outside this range.
   uint32 port = 5;
 
   // Unix timestamp (seconds) of the most recent telemetry record
@@ -67,7 +68,8 @@ message Peer {
   // Public IPv4 of the peer as four raw bytes (network byte order).
   bytes ip = 1;
 
-  // TCP port on which the peer accepts client connections.
+  // TCP port on which the peer accepts client connections. Valid
+  // range 1–65535; the Hub MUST reject values outside this range.
   uint32 port = 2;
 
   // ISO 3166-1 alpha-2 country code where the peer is hosted.
