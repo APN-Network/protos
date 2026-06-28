@@ -24,7 +24,7 @@ message Auth {
   // possession of the PSK without revealing it.
   bytes hmac = 3;
 
-  // Free-form device label reported by the client (e.g. "iPhone15,3",
+  // Free-form device label reported by the client (e.g. "SM-G998B",
   // "Pixel 8"). Recorded by the Hub for usage analytics; not used
   // for authentication.
   string device = 4;
@@ -40,14 +40,14 @@ message Auth {
 
   // Version of the APN client software sending the request, in the
   // form "<store>:<semver>", where the store is a single letter
-  // naming the marketplace the build was released to: "A" for the
-  // Apple App Store, "G" for Google Play, "H" for Huawei AppGallery
-  // (e.g. "A:1.1.1", "G:1.1.1", or "H:1.1.1"). Forwarded by the
-  // Node to the Hub for usage analytics; not used for authentication.
+  // naming the marketplace the build was released to: "G" for Google
+  // Play, "H" for Huawei AppGallery (e.g. "G:1.1.1" or "H:1.1.1").
+  // Forwarded by the Node to the Hub for usage analytics; not used
+  // for authentication.
   string version = 7;
 
   // Screen dimension of the client device in physical pixels, in the
-  // form "<width>x<height>" (e.g. "1179x2556"). Forwarded by the Node
+  // form "<width>x<height>" (e.g. "1440x3120"). Forwarded by the Node
   // to the Hub for usage analytics; not used for authentication.
   string screen = 8;
 }
