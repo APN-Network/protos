@@ -67,11 +67,6 @@ message Peer {
   // Public IPv4 of the peer as four raw bytes (network byte order).
   bytes ip = 1;
 
-  // Public IPv6 of the peer as sixteen raw bytes (network byte
-  // order), the counterpart of `ip`. Empty when the peer has no IPv6
-  // endpoint to advertise.
-  bytes ip6 = 7;
-
   // TCP port on which the peer accepts client connections.
   uint32 port = 2;
 
