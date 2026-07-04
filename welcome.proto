@@ -42,7 +42,10 @@ message Welcome {
   string error = 3;
 
   // Random bytes appended so that the encrypted Welcome size varies
-  // across sessions, mirroring Auth.padding.
+  // across sessions, mirroring Auth.padding. MUST NOT exceed 1024
+  // bytes. The client SHOULD check the raw-wire frame length before
+  // deserialising the protobuf, so that a rogue Node cannot force a
+  // large allocation before the client inspects `status`.
   bytes padding = 4;
 
   // Public IPv4 (4 raw bytes) of the client as observed by the Node
