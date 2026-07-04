@@ -103,6 +103,7 @@ message Pong {
   Lease lease = 2;
 
   // Current set of country slots owned by this client.
+  // Max 256 entries; clients MUST reject a Pong carrying more.
   repeated Property properties = 3;
 
   // Field numbers 4..12 were used by earlier protocol revisions
@@ -111,6 +112,7 @@ message Pong {
 
   // Other Nodes in the fleet, advertised so that the client can
   // pick a fallback when the current Node is about to expire.
+  // Max 256 entries; clients MUST reject a Pong carrying more.
   repeated Peer servers = 13;
 
   // Unix timestamp (seconds) at which *this* Node — the one
