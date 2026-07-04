@@ -60,7 +60,8 @@ message Property {
   // ClientHello SNI when dialing the slot's Node, so the handshake
   // blends in with ordinary HTTPS traffic. Same semantics as
   // Peer.sni; assigned by the Hub and stable for the life of the
-  // backing Node. Empty while the slot is detached.
+  // backing Node. Empty while the slot is detached; clients MUST
+  // NOT dial a slot with an empty sni.
   string sni = 8;
 }
 
@@ -91,7 +92,10 @@ message Peer {
   // when dialing the peer, so the handshake blends in with ordinary
   // HTTPS traffic to a popular domain ("github.com", "apple.com", …).
   // Assigned at random by the Hub when the Node is created and stable
-  // for the life of that Node.
+  // for the life of that Node. MUST be non-empty; an empty sni would
+  // cause a TLS handshake failure indistinguishable from a dead Node.
+  // Clients MUST discard a Peer with an empty sni rather than dialling
+  // it.
   string sni = 6;
 }
 
