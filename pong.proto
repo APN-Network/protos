@@ -36,7 +36,8 @@ message Property {
 
   // TCP port to dial on the backing Node. Always 443 in production
   // but kept explicit so a Node may move to a different port
-  // without a client release.
+  // without a client release. Valid range 1–65535; the Hub and Node
+  // MUST reject values outside this range.
   uint32 port = 5;
 
   // Unix timestamp (seconds) of the most recent telemetry record
@@ -48,7 +49,10 @@ message Property {
   // Unix timestamp (seconds) at which the backing Node will be
   // decommissioned. Distinct from `ends`: the slot can outlive the
   // Node, in which case the Hub re-attaches it to a fresh Node and
-  // the client receives an updated Property.
+  // the client receives an updated Property. When this Property is
+  // backed by the connected Node, Pong.expires (field 14) is the
+  // authoritative source and MUST be preferred over this value if
+  // the two differ.
   uint64 expires = 7;
 
   // TLS Server Name Indication the backing Node presents on its
@@ -56,7 +60,8 @@ message Property {
   // ClientHello SNI when dialing the slot's Node, so the handshake
   // blends in with ordinary HTTPS traffic. Same semantics as
   // Peer.sni; assigned by the Hub and stable for the life of the
-  // backing Node. Empty while the slot is detached.
+  // backing Node. Empty while the slot is detached; clients MUST
+  // NOT dial a slot with an empty sni.
   string sni = 8;
 }
 
@@ -67,7 +72,8 @@ message Peer {
   // Public IPv4 of the peer as four raw bytes (network byte order).
   bytes ip = 1;
 
-  // TCP port on which the peer accepts client connections.
+  // TCP port on which the peer accepts client connections. Valid
+  // range 1–65535; the Hub MUST reject values outside this range.
   uint32 port = 2;
 
   // ISO 3166-1 alpha-2 country code where the peer is hosted.
@@ -86,7 +92,10 @@ message Peer {
   // when dialing the peer, so the handshake blends in with ordinary
   // HTTPS traffic to a popular domain ("github.com", "apple.com", …).
   // Assigned at random by the Hub when the Node is created and stable
-  // for the life of that Node.
+  // for the life of that Node. MUST be non-empty; an empty sni would
+  // cause a TLS handshake failure indistinguishable from a dead Node.
+  // Clients MUST discard a Peer with an empty sni rather than dialling
+  // it.
   string sni = 6;
 }
 
@@ -103,6 +112,7 @@ message Pong {
   Lease lease = 2;
 
   // Current set of country slots owned by this client.
+  // Max 256 entries; clients MUST reject a Pong carrying more.
   repeated Property properties = 3;
 
   // Field numbers 4..12 were used by earlier protocol revisions
@@ -111,42 +121,56 @@ message Pong {
 
   // Other Nodes in the fleet, advertised so that the client can
   // pick a fallback when the current Node is about to expire.
+  // Max 256 entries; clients MUST reject a Pong carrying more.
   repeated Peer servers = 13;
 
   // Unix timestamp (seconds) at which *this* Node — the one
   // answering the Ping — will be decommissioned. The client uses
-  // it to migrate to a peer before the Node disappears.
+  // it to migrate to a peer before the Node disappears. This is
+  // the authoritative source for the connected Node's retirement;
+  // when a Property slot is backed by the same Node, the client
+  // MUST prefer Pong.expires over Property.expires if the two
+  // disagree.
   uint64 expires = 14;
 
   // Fixed Unix timestamp (seconds) at which the client's free-tier
   // service grant ends. Unlike earlier revisions this is a stable
   // moment computed from server-side state, not a value that drifts
   // between Pongs, so the client may cache it and reason about it
-  // offline. It describes the free tier only:
+  // offline.
   //
-  //   * Free-tier client inside the free window:
-  //       cutoff > now.
-  //       (cutoff - now) is the time left before the window runs
-  //       out — render "free for X more".
+  // Semantics by value:
   //
-  //   * Free-tier client past the free window:
-  //       cutoff <= now.
-  //       The client is cut off and must wait until `cooldown`
-  //       (see below) before a fresh free window opens.
+  //   cutoff == SENTINEL (UINT64_MAX)
+  //       Hub state not yet loaded (transient, briefly after Auth
+  //       while the Node is fetching the client record from the
+  //       Hub). The client SHOULD act as if no free-tier information
+  //       is available yet and await the next Pong.
   //
-  //   * Paid client (lease.ends > now):
-  //       cutoff is set far in the future (now + 365d). The
-  //       free-tier line is irrelevant; the client renders
-  //       "Paid until ..." from `lease` instead.
+  //   cutoff <= now
+  //       Free-tier client past the free window—cut off. Render
+  //       "free in X" using `cooldown` (see below).
   //
-  //   * Hub state not yet loaded (transient, briefly after Auth
-  //     while the Node is fetching the client record from the
-  //     Hub): cutoff is set far in the future (now + 365d) as a
-  //     placeholder.
+  //   now < cutoff < SENTINEL
+  //       Three sub-cases:
   //
-  // Clients should treat any cutoff more than a few days in the
-  // future as "no free-tier deadline" rather than a real window
-  // end, which covers both the paid and not-yet-loaded cases.
+  //       a) Paid client (lease.ends > now):
+  //          cutoff == lease.ends. The free-tier line is irrelevant;
+  //          the client renders "Paid until ..." from `lease`.
+  //
+  //       b) Free-tier client inside the free window:
+  //          (cutoff - now) is the remaining time — render
+  //          "free for X more".
+  //
+  //       c) Free-tier placeholder (should not happen in practice
+  //          after the initial loading Pong, but client handles it
+  //          the same as b).
+  //
+  // Protocol constant — clients MUST compare against the exact
+  // sentinel value (UINT64_MAX / 0xFFFFFFFFFFFFFFFF) rather than
+  // using a range check, so that a genuine paid-plan timestamp
+  // (which may be years into the future) is never mistaken for the
+  // loading placeholder.
   uint64 cutoff = 15;
 
   // Fixed Unix timestamp (seconds) at which the client may next use
@@ -163,8 +187,9 @@ message Pong {
   //   * now >= cooldown: the cooldown has elapsed; render "try to
   //     connect anyway".
   //
-  // For paid clients and the not-yet-loaded placeholder it is set
-  // far in the future alongside `cutoff` and carries no meaning.
+  // When cutoff == SENTINEL (UINT64_MAX) or the client is paid
+  // (lease.ends > now), cooldown is also set to UINT64_MAX and
+  // carries no meaning.
   uint64 cooldown = 17;
 
   // Free-form Node-side metrics surfaced to the client for
@@ -175,11 +200,15 @@ message Pong {
   //   "brothers" — size of the advertised peer set.
   //   "stalls"   — count of slow socket writes seen for this
   //                client since connect (back-pressure signal).
-  //   "rtt"      — last measured round-trip time, in milliseconds.
   //   "PPM"      — packets per minute, in and out across all
   //                tunnels over the trailing minute.
+  //   "TUN"      — slow TUN writes per minute on the Node side of
+  //                this client's tunnel (back-pressure signal, same
+  //                shape as PPM).
   //   "MEM"      — resident memory of the Node process, in MB.
-  // Unknown keys must be ignored by the client.
+  // Unknown keys must be ignored by the client. Max 32 entries;
+  // each key MUST NOT exceed 16 bytes. Clients MUST reject a Pong
+  // carrying a gauges map that violates these bounds.
   map<string, int64> gauges = 16;
 
   // Optional diagnostic line the Node wants surfaced to the user.

@@ -6,20 +6,28 @@ package proto;
 
 // Outcome of the Node's check of the preceding Auth message.
 enum Status {
+  // Zero-value sentinel. Proto3 defaults missing / unrecognised enum
+  // fields to 0, so a truncated Welcome would otherwise deserialise
+  // as OK. Clients MUST reject STATUS_UNSPECIFIED as a hard error.
+  STATUS_UNSPECIFIED = 0;
+
   // Authentication succeeded; the rest of the Welcome carries the
   // assigned tunnel address.
-  OK = 0;
+  OK = 1;
 
   // Authentication failed; see Welcome.error for the reason.
-  ERROR = 1;
+  ERROR = 2;
 }
 
 // Welcome is the Node's reply to Auth. It is sent exactly once per
 // session, immediately after the Node decides whether to accept the
 // client. On OK the client switches to tunnel mode and begins
-// exchanging IP/Ping/Pong frames; on ERROR it disconnects.
+// exchanging IP/Ping/Pong frames; on STATUS_UNSPECIFIED or ERROR
+// it disconnects.
 message Welcome {
-  // Whether the Node accepted the Auth message.
+  // Whether the Node accepted the Auth message. Clients MUST reject
+  // STATUS_UNSPECIFIED as a protocol error (truncated / malformed
+  // frame).
   Status status = 1;
 
   // Human-readable build tag of the Node, e.g. "1.2.3"; surfaced in
@@ -32,10 +40,10 @@ message Welcome {
   // mismatch before falling back to the textual `major`.
   uint32 minor = 6;
 
-  // IPv4 address (4 raw bytes) assigned to the client inside the
-  // tunnel for the lifetime of this session. The client uses it as
-  // the source address of every encapsulated IPv4 packet; IPv6
-  // packets use `ip6` instead.
+  // IPv4 address (4 raw bytes, network byte order) assigned to the
+  // client inside the tunnel for the lifetime of this session. The
+  // client uses it as the source address of every encapsulated IPv4
+  // packet; IPv6 packets use `ip6` instead.
   bytes ip = 2;
 
   // IPv6 address (16 raw bytes) assigned to the client inside the
@@ -49,13 +57,16 @@ message Welcome {
   string error = 3;
 
   // Random bytes appended so that the encrypted Welcome size varies
-  // across sessions, mirroring Auth.padding.
+  // across sessions, mirroring Auth.padding. MUST NOT exceed 1024
+  // bytes. The client SHOULD check the raw-wire frame length before
+  // deserialising the protobuf, so that a rogue Node cannot force a
+  // large allocation before the client inspects `status`.
   bytes padding = 4;
 
-  // Public IPv4 (4 raw bytes) of the client as observed by the Node
-  // — i.e. the address the client appears to come from on the
-  // public Internet. The client compares this to its local view to
-  // detect NAT and to populate analytics.
+  // Public IPv4 (4 raw bytes, network byte order) of the client as
+  // observed by the Node — i.e. the address the client appears to
+  // come from on the public Internet. The client compares this to
+  // its local view to detect NAT and to populate analytics.
   bytes home = 7;
 
   // Public IPv6 (16 raw bytes) of the client as observed by the Node,
@@ -67,5 +78,8 @@ message Welcome {
   // environment variable. The value carries a short prefix followed
   // by a colon (e.g. "VLZ:" or "HTZ:") that the client surfaces in
   // diagnostics and the tunnel header to hint at the hosting region.
+  // MUST be non-empty when status == OK; an empty nid silently
+  // breaks the prefix invariant. Node implementations should refuse
+  // to start when APN_NID is unset.
   string nid = 8;
 }
