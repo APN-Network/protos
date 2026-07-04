@@ -34,7 +34,8 @@ message Welcome {
 
   // IPv4 address (4 raw bytes) assigned to the client inside the
   // tunnel for the lifetime of this session. The client uses it as
-  // the source address of every encapsulated IP packet.
+  // the source address of every encapsulated IPv4 packet; IPv6
+  // packets use `ip6` instead.
   bytes ip = 2;
 
   // IPv6 address (16 raw bytes) assigned to the client inside the
