@@ -42,9 +42,15 @@ message Welcome {
 
   // IPv4 address (4 raw bytes, network byte order) assigned to the
   // client inside the tunnel for the lifetime of this session. The
-  // client uses it as the source address of every encapsulated IP
-  // packet.
+  // client uses it as the source address of every encapsulated IPv4
+  // packet; IPv6 packets use `ip6` instead.
   bytes ip = 2;
+
+  // IPv6 address (16 raw bytes) assigned to the client inside the
+  // tunnel for the lifetime of this session, the counterpart of `ip`.
+  // The client uses it as the source of every encapsulated IPv6
+  // packet. Empty when the Node offers no IPv6 tunnel.
+  bytes ip6 = 9;
 
   // Free-form error message explaining why authentication failed.
   // Set only when `status == ERROR`; empty otherwise.
@@ -62,6 +68,11 @@ message Welcome {
   // come from on the public Internet. The client compares this to
   // its local view to detect NAT and to populate analytics.
   bytes home = 7;
+
+  // Public IPv6 (16 raw bytes) of the client as observed by the Node,
+  // the IPv6 counterpart of `home`. Empty when the client reached the
+  // Node over IPv4.
+  bytes home6 = 10;
 
   // Node ID of the responding Node, taken verbatim from its APN_NID
   // environment variable. The value carries a short prefix followed
