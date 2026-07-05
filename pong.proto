@@ -29,6 +29,8 @@ message Property {
   // ISO 3166-1 alpha-2 country code of the slot ("US", "DE", …).
   string country = 2;
 
+  reserved 3;
+
   // Public IPv4 of the Node currently backing this slot, in dotted
   // form ("203.0.113.7"). Empty / "0.0.0.0" while the slot is
   // detached.
