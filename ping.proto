@@ -23,4 +23,5 @@ message Ping {
   // than the fleet size (dozens); the Node SHOULD discard or
   // truncate a Ping whose canaries map exceeds that bound to prevent
   // unbounded map allocation per session.
+  map<string, uint32> canaries = 2;
 }
