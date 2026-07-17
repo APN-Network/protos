@@ -74,4 +74,12 @@ message Welcome {
   // breaks the prefix invariant. Node implementations should refuse
   // to start when APN_NID is unset.
   string nid = 8;
+
+  // Physical location of the responding Node as key/value pairs,
+  // normalized by the Hub from its geolocation provider and forwarded
+  // verbatim by the Node. Recognised keys are "city", "region", "asn"
+  // and "org"; values are already human-readable strings. Any subset
+  // may be present and the map is empty when the Node's location is
+  // still unknown, so clients MUST treat every key as optional.
+  map<string, string> geo = 11;
 }
