@@ -24,4 +24,12 @@ message Ping {
   // truncate a Ping whose canaries map exceeds that bound to prevent
   // unbounded map allocation per session.
   map<string, uint32> canaries = 2;
+
+  // Round-trip time of the previous Ping/Pong exchange, in
+  // milliseconds, measured by the client. Zero means "no measurement
+  // yet" (e.g. the first Ping of a session before any Pong has
+  // arrived); the Node MUST ignore a zero and not record it. The Node
+  // buckets non-zero values into a fixed histogram and reports the
+  // per-client average RTT to the Hub with usage data.
+  uint32 rtt = 3;
 }
