@@ -16,10 +16,12 @@ message Auth {
 
   // Minutes since the project epoch (2024-01-01 UTC), used as a
   // replay-prevention nonce. The Node accepts the message only if
-  // this value is within one minute of its own clock.
-  uint32 timestamp = 2;
+  // this value is within one minute of its own clock. Unit is
+  // encoded in the field name to distinguish from ms/Unix-epoch
+  // timestamps elsewhere in the protocol.
+  uint32 timestamp_min = 2;
 
-  // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp),
+  // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp_min),
   // computed with the pre-shared key issued to this client. Proves
   // possession of the PSK without revealing it. Receivers MUST
   // assert len(hmac) == 12 and reject the Auth before performing any
