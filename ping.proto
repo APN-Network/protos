@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: Copyright (c) 2026 APN
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright (c) 2026 APN.
+// SPDX-License-Identifier: MIT.
 
 syntax = "proto3";
 package proto;
