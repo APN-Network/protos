@@ -44,6 +44,19 @@ message Welcome {
   // packet. Empty when the Node offers no IPv6 tunnel.
   bytes ip6 = 9;
 
+  // IPv4 tunnel subnet the Node serves, in CIDR form (e.g.
+  // "10.8.0.0/24"). Every assigned `ip` falls inside it. The Node is
+  // authoritative for this value; the client reads it to recognise a
+  // local `utun` whose address lies in the range as its own APN tunnel
+  // rather than a rival VPN, and SHOULD persist it so the check
+  // survives a process restart that precedes the next Welcome. MUST be
+  // non-empty when status == OK.
+  string subnet = 12;
+
+  // IPv6 tunnel subnet, the CIDR counterpart of `subnet` (e.g.
+  // "fd00::/64"). Empty when the Node offers no IPv6 tunnel.
+  string subnet6 = 13;
+
   // Free-form error message explaining why authentication failed.
   // Set only when `status == ERROR`; empty otherwise.
   string error = 3;
