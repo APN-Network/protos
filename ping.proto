@@ -3,6 +3,7 @@
 
 syntax = "proto3";
 package proto;
+option go_package = "github.com/APN-Network/protos;apnproto";
 
 // Ping is sent by the client at a regular interval (a few seconds)
 // to keep the tunnel alive, drive RTT measurement, and piggyback

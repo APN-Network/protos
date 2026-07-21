@@ -3,6 +3,7 @@
 
 syntax = "proto3";
 package proto;
+option go_package = "github.com/APN-Network/protos;apnproto";
 
 // Lease describes the client's paid subscription as known to the
 // Hub. An empty Lease (ends == 0) means the client is on the free
