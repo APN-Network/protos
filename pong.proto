@@ -23,7 +23,8 @@ message Lease {
 message Property {
   // Unix timestamp (seconds) at which the slot itself expires —
   // i.e. when the customer's purchase runs out. Independent of the
-  // life of the underlying Node (see `expires`).
+  // life of the underlying Node (see `expires`). Zero means no
+  // purchase record is available (e.g. not yet loaded from Hub).
   uint64 ends = 1;
 
   // ISO 3166-1 alpha-2 country code of the slot ("US", "DE", …).
@@ -84,7 +85,8 @@ message Peer {
   uint64 metered = 4;
 
   // Unix timestamp (seconds) at which the peer is scheduled for
-  // decommission.
+  // decommission. Zero means no decommission is scheduled; the
+  // client MUST NOT treat a zero as "already expired".
   uint64 expires = 5;
 
   // TLS Server Name Indication the peer presents on its endpoint.
@@ -130,7 +132,8 @@ message Pong {
   // the authoritative source for the connected Node's retirement;
   // when a Property slot is backed by the same Node, the client
   // MUST prefer Pong.expires over Property.expires if the two
-  // disagree.
+  // disagree. Zero means no decommission is scheduled; the client
+  // MUST NOT treat a zero as "already expired".
   uint64 expires = 14;
 
   // Fixed Unix timestamp (seconds) at which the client's free-tier
