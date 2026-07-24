@@ -38,7 +38,10 @@ message Auth {
 
   // Random bytes appended so that the encrypted message size varies
   // across sessions. Defeats traffic-analysis fingerprinting of the
-  // Auth frame; the Node ignores the contents.
+  // Auth frame; the Node ignores the contents. MUST NOT exceed 1024
+  // bytes. The Node SHOULD enforce this ceiling as a raw-wire length
+  // check before deserialising the message, so that an unauthenticated
+  // peer cannot force a large pre-HMAC allocation.
   bytes padding = 6;
 
   // Version of the APN client software sending the request, in the
