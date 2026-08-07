@@ -96,12 +96,12 @@ message Welcome {
   // still unknown, so clients MUST treat every key as optional.
   map<string, string> geo = 11;
 
-  // True when the Node runs in the testing release channel, taken
-  // verbatim from its APN_TESTING environment variable, which the Hub
+  // True when the Node runs in the sandbox release channel, taken
+  // verbatim from its APN_SANDBOX environment variable, which the Hub
   // sets at provisioning time from the node's status in its database.
   // Clients surface the flag in diagnostics and next to the server
   // address in the UI; proto3's false default means the stable
   // channel, so older Nodes are reported as stable. Field number 14
   // is taken by the in-flight `mtu` field.
-  bool testing = 15;
+  bool sandbox = 15;
 }
