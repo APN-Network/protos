@@ -57,6 +57,19 @@ message Welcome {
   // "fd00::/64"). Empty when the Node offers no IPv6 tunnel.
   string subnet6 = 13;
 
+  // Maximum transmission unit, in bytes, the client MUST apply to its
+  // own tunnel interface for the lifetime of this session. The Node
+  // derives it from its own tunnel interface and from the framing the
+  // transport of this session wraps around every encapsulated packet,
+  // so the value differs between the TCP and the QUIC channel: a
+  // full-size inner packet must still fit the narrowest path once
+  // wrapped. A client that sizes its interface above this value
+  // blackholes its own largest packets on every path narrower than the
+  // wrapped packet, with no ICMP to explain the loss. Zero means the
+  // Node predates this field, in which case the client MUST keep its
+  // built-in default of 1420.
+  uint32 mtu = 14;
+
   // Free-form error message explaining why authentication failed.
   // Set only when `status == ERROR`; empty otherwise.
   string error = 3;
