@@ -16,11 +16,11 @@ message Lease {
   uint64 ends = 1;
 }
 
-// Property is one purchased "country slot": a country the client is
+// Owned is one purchased "country slot": a country the client is
 // entitled to route through. The slot is attached to a particular
 // Node for the duration of that Node's life and re-attached when
 // the Node is rotated out.
-message Property {
+message Owned {
   // Unix timestamp (seconds) at which the slot itself expires —
   // i.e. when the customer's purchase runs out. Independent of the
   // life of the underlying Node (see `expires`). Zero means no
@@ -52,7 +52,7 @@ message Property {
   // Unix timestamp (seconds) at which the backing Node will be
   // decommissioned. Distinct from `ends`: the slot can outlive the
   // Node, in which case the Hub re-attaches it to a fresh Node and
-  // the client receives an updated Property. When this Property is
+  // the client receives an updated Owned. When this Owned is
   // backed by the connected Node, Pong.expires (field 14) is the
   // authoritative source and MUST be preferred over this value if
   // the two differ.
@@ -85,7 +85,7 @@ message Peer {
   string country = 3;
 
   // Unix timestamp (seconds) of the peer's most recent telemetry
-  // report at the Hub — same semantics as Property.metered.
+  // report at the Hub — same semantics as Owned.metered.
   uint64 metered = 4;
 
   // Unix timestamp (seconds) at which the peer is scheduled for
@@ -107,7 +107,7 @@ message Peer {
 
 // Pong is the Node's reply to a Ping. It both acknowledges the
 // keep-alive and ferries fresh state from the Hub (lease,
-// properties, fleet) so the client UI can stay current without a
+// owneds, fleet) so the client UI can stay current without a
 // separate channel.
 message Pong {
   // Echo of Ping.timestamp, used by the client to compute RTT.
@@ -119,7 +119,7 @@ message Pong {
 
   // Current set of country slots owned by this client.
   // Max 256 entries; clients MUST reject a Pong carrying more.
-  repeated Property properties = 3;
+  repeated Owned owneds = 3;
 
   // Field numbers 4..12 were used by earlier protocol revisions
   // and must not be re-purposed.
@@ -134,8 +134,8 @@ message Pong {
   // answering the Ping — will be decommissioned. The client uses
   // it to migrate to a peer before the Node disappears. This is
   // the authoritative source for the connected Node's retirement;
-  // when a Property slot is backed by the same Node, the client
-  // MUST prefer Pong.expires over Property.expires if the two
+  // when an Owned slot is backed by the same Node, the client
+  // MUST prefer Pong.expires over Owned.expires if the two
   // disagree. Zero means no decommission is scheduled; the client
   // MUST NOT treat a zero as "already expired".
   uint64 expires = 14;
