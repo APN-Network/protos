@@ -103,6 +103,15 @@ message Peer {
   // Clients MUST discard a Peer with an empty sni rather than dialling
   // it.
   string sni = 6;
+
+  // Whether the peer accepts the QUIC transport on udp/port. When
+  // false the client MUST dial the peer over TLS only and MUST NOT
+  // spend a single datagram probing udp/port, since the peer either
+  // runs a build without QUIC or sits behind a filter that drops
+  // UDP. Assigned by the Hub, true for a freshly provisioned Node,
+  // and toggled by the operator. A client that never speaks QUIC
+  // ignores this field.
+  bool quic = 7;
 }
 
 // Pong is the Node's reply to a Ping. It both acknowledges the
