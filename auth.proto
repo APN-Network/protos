@@ -59,4 +59,14 @@ message Auth {
   // form "<width>x<height>" (e.g. "1440x3120"). Forwarded by the Node
   // to the Hub for usage analytics; not used for authentication.
   string screen = 8;
+
+  // Acquisition channel of this installation, as named by the store
+  // that delivered the app (e.g. "hub" recovered from utm_source in a
+  // Google Play install referrer). Empty when the install was organic
+  // or when the store exposes no referrer, so receivers MUST treat an
+  // absent value as normal and never reject the Auth for it.
+  // Forwarded by the Node to the Hub for acquisition analytics; not
+  // used for authentication. MUST NOT exceed 64 bytes; the Node
+  // truncates anything longer.
+  string campaign = 9;
 }
