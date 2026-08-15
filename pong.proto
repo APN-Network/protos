@@ -112,6 +112,17 @@ message Peer {
   // and toggled by the operator. A client that never speaks QUIC
   // ignores this field.
   bool quic = 7;
+
+  // Roaming priority of the peer. Lower is better: a client MUST
+  // exhaust every viable Tier-1 peer before it dials a Tier-2 one,
+  // and so on down the ladder, so that a fresh install lands on the
+  // fleet's best exit first. Assigned by the operator through the
+  // Hub, positive, and stable until the operator moves the Node.
+  // Zero means the Hub stated no tier — an older Hub, or a Node that
+  // predates this field — and clients MUST read a zero as 2, the
+  // Hub's own default, so that an unstated tier never outranks an
+  // explicit Tier-1.
+  uint32 tier = 8;
 }
 
 // Pong is the Node's reply to a Ping. It both acknowledges the
