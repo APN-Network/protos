@@ -3,6 +3,7 @@
 
 syntax = "proto3";
 package proto;
+option go_package = "github.com/APN-Network/protos;apnproto";
 
 // Auth is sent by the client to the Node as the first application
 // message after the TLS handshake. The Node verifies the HMAC tag
