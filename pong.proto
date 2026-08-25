@@ -4,7 +4,7 @@
 syntax = "proto3";
 package proto;
 
-// Lease describes the client's paid subscription as known to the
+// Lease describes the client's subscription as known to the
 // Hub. An empty Lease (ends == 0) means the client is on the free
 // tier and is bound by the rolling free-quota window enforced via
 // Pong.cutoff and Pong.cooldown.
@@ -14,6 +14,17 @@ message Lease {
   // Node ignores the free-quota check; once `ends <= now` the
   // client is treated as free-tier.
   uint64 ends = 1;
+
+  // Whether the Hub granted this lease for free, as a trial, rather
+  // than selling it. True for the complimentary window every new
+  // client receives; false once the client pays, through a store or
+  // a card, and for every lease the Hub records as purchased.
+  // Clients surface the difference in the plan line — "Trial until"
+  // against "Paid until" — and MAY invite a trial client to buy.
+  // Proto3's false default means a Node that predates this field
+  // reports every lease as paid, so a client MUST NOT read a false
+  // as proof of a purchase.
+  bool trial = 2;
 }
 
 // Owned is one purchased "country slot": a country the client is
