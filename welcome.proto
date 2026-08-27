@@ -70,6 +70,21 @@ message Welcome {
   // built-in default of 1420.
   uint32 mtu = 14;
 
+  // Recursive resolvers the client MUST use for name resolution while
+  // this session is up, as textual addresses (dotted-decimal IPv4,
+  // e.g. "10.8.0.1", or IPv6). Every address lies inside `subnet` or
+  // `subnet6`, is reachable only through the tunnel, and is answered
+  // by the Node itself, which recurses from the root hints, so that
+  // no lookup and no third-party resolver ever sees the client's
+  // traffic. The client applies them verbatim, keeps its match-all
+  // domain scope, and MUST NOT reuse them across sessions: the Node
+  // is authoritative for this value and derives it from its own
+  // tunnel CIDR, which may change between sessions. Empty when the
+  // Node offers no resolver of its own — its health check failed, or
+  // it predates this field — in which case the client keeps its
+  // built-in resolvers and SHOULD log that it did.
+  repeated string dns = 16;
+
   // Free-form error message explaining why authentication failed.
   // Set only when `status == ERROR`; empty otherwise.
   string error = 3;
