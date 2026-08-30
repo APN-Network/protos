@@ -255,4 +255,12 @@ message Pong {
   // then the message text. The client splits off X and logs the
   // text at that level; an unknown or missing letter means info.
   string notice = 18;
+
+  // ISO 3166-1 alpha-2 country code the Hub attributes to the
+  // client's own public address ("US", "DE", …), as opposed to
+  // `Owned.country` and `Peer.country`, which name server sites.
+  // Empty means the Hub has not resolved the address yet, or the
+  // Node predates this field; a client MUST NOT read an empty
+  // value as a country and SHOULD keep the last non-empty one.
+  string country = 19;
 }
