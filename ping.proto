@@ -4,6 +4,24 @@
 syntax = "proto3";
 package proto;
 
+// Edition names the split-tunnel whitelist a client holds: which
+// country's list, which Hub version of it, and how many of its
+// prefixes have arrived so far. The Node pages the rest from `count`.
+message Edition {
+  // ISO 3166-1 alpha-2 country the held list is for ("RU"). Empty
+  // means the client holds no list at all.
+  string country = 1;
+
+  // Version stamped on the list by the Hub, opaque to the client and
+  // compared for equality only. Zero means no list is held.
+  uint64 version = 2;
+
+  // Number of prefixes of that version received so far, in list
+  // order. Zero means none has arrived yet, so the Node starts from
+  // the first page.
+  uint32 count = 3;
+}
+
 // Ping is sent by the client at a regular interval (a few seconds)
 // to keep the tunnel alive, drive RTT measurement, and piggyback
 // reachability reports about peer Nodes. The Node answers each Ping
@@ -35,4 +53,17 @@ message Ping {
   // buckets non-zero values into a fixed histogram and reports the
   // per-client average RTT to the Hub with usage data.
   uint32 rtt = 3;
+
+  // Field 15 carries random padding that every client appends after
+  // the serialized message (see Padding in the clients); it MUST stay
+  // reserved so that no real field ever collides with those bytes.
+  reserved 15;
+
+  // How much of its country whitelist — the address prefixes routed
+  // around the tunnel — the client holds, so the Node can send only
+  // the pages it misses (see Pong.whitelist). Present on every Ping
+  // while split tunneling is on, all zero until the first page lands.
+  // Absent when the client predates this field or keeps split
+  // tunneling off, and then the Node MUST NOT send Pong.whitelist.
+  Edition whitelist = 4;
 }
