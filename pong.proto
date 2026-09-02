@@ -136,6 +136,43 @@ message Peer {
   uint32 tier = 8;
 }
 
+// Whitelist is one page of the address prefixes a client routes
+// around the tunnel when split tunneling is on: the domestic services
+// of the client's own country (Yandex, VK, … for "RU"), collected by
+// Node resolvers and resolved by the Hub. The full list holds at most
+// 1024 prefixes while a Node frame is capped at 2048 bytes, so the
+// Node sends it as consecutive pages, each sized to the room left in
+// the Pong.
+message Whitelist {
+  // ISO 3166-1 alpha-2 country the list belongs to; equals
+  // Pong.country. Empty never happens on a page the Node sends.
+  string country = 1;
+
+  // Hub version of the list this page comes from, opaque to the
+  // client. Zero, together with a zero `total`, tells the client its
+  // country has no list and it MUST drop whatever it holds.
+  uint64 version = 2;
+
+  // Index of `prefixes[0]` within the full list. A client accepts a
+  // page of an edition it does not hold only at offset zero, replacing
+  // what it holds, and a page of the edition it holds only at offset
+  // equal to its Edition.count, appending; any other page is ignored.
+  // Zero means the page starts the list.
+  uint32 offset = 3;
+
+  // Prefixes in CIDR notation ("203.0.113.0/24", "2a02:6b8::/32"),
+  // never shorter than /8 for IPv4 or /32 for IPv6. Clients MUST skip
+  // entries they cannot parse and MUST NOT route around the tunnel
+  // before the whole list has arrived. Empty only on the page that
+  // drops everything.
+  repeated string prefixes = 4;
+
+  // Length of the full list; the client holds the whole edition once
+  // its count reaches this. Max 1024; clients MUST ignore a page that
+  // announces more. Zero with a zero version means no list.
+  uint32 total = 5;
+}
+
 // Pong is the Node's reply to a Ping. It both acknowledges the
 // keep-alive and ferries fresh state from the Hub (lease,
 // owneds, fleet) so the client UI can stay current without a
@@ -263,4 +300,11 @@ message Pong {
   // Node predates this field; a client MUST NOT read an empty
   // value as a country and SHOULD keep the last non-empty one.
   string country = 19;
+
+  // The page of the country whitelist the client is missing, see
+  // Whitelist. Sent only when the Ping carried an Edition, the Node
+  // knows the client's country, and the client is behind the current
+  // version; absent otherwise, so the client keeps what it holds. A
+  // Node that predates this field never sets it.
+  Whitelist whitelist = 20;
 }
