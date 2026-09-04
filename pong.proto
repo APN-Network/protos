@@ -276,6 +276,14 @@ message Pong {
   //                this client's tunnel (back-pressure signal, same
   //                shape as PPM).
   //   "MEM"      — resident memory of the Node process, in MB.
+  //   "CAP"      — the Node's own ceiling on concurrent clients,
+  //                the number at which it starts refusing Auth.
+  //                Always positive when present; absent from a Node
+  //                that predates this key, and a client MUST then
+  //                skip every judgement that divides by it rather
+  //                than read the absence as a zero ceiling.
+  //                Clients compare it to "clients" to tell the user
+  //                the server is crowded.
   // Unknown keys must be ignored by the client. Max 32 entries;
   // each key MUST NOT exceed 16 bytes. Clients MUST reject a Pong
   // carrying a gauges map that violates these bounds.
