@@ -296,6 +296,16 @@ message Pong {
   // value as a country and SHOULD keep the last non-empty one.
   string country = 19;
 
+  // True when the country in `country` is one where the mobile app
+  // stores refuse to take money — Google Play and App Store billing
+  // is unavailable there — so the client SHOULD offer card and crypto
+  // checkout on the website beside, or instead of, its store button.
+  // The Hub owns the list and hands it to every Node; clients MUST
+  // NOT hardwire one. False means either an unsanctioned country, an
+  // unresolved address, or a Node that predates this field, and a
+  // client MUST treat all three the same.
+  bool sanctioned = 21;
+
   // The page of the country whitelist the client is missing, see
   // Whitelist. Sent only when the Ping carried an Edition, the Node
   // knows the client's country, and the client is behind the current
