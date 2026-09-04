@@ -181,8 +181,13 @@ message Pong {
   // Echo of Ping.timestamp, used by the client to compute RTT.
   uint64 timestamp = 1;
 
-  // Current lease snapshot for this client. Always present; an
-  // empty Lease means free tier.
+  // Current lease snapshot for this client. Unset until the Node
+  // has read this client's record from the Hub — a transient state
+  // in the first seconds after Auth. Set, and possibly empty
+  // (ends == 0), once the record arrives; an empty Lease means the
+  // client is on the free tier. These are two different states and
+  // a client MUST tell them apart with the field-presence check
+  // (has_lease), never reading a missing Lease as a free tier.
   Lease lease = 2;
 
   // Current set of country slots owned by this client.
@@ -216,18 +221,12 @@ message Pong {
   //
   // Semantics by value:
   //
-  //   cutoff == SENTINEL (UINT64_MAX)
-  //       Hub state not yet loaded (transient, briefly after Auth
-  //       while the Node is fetching the client record from the
-  //       Hub). The client SHOULD act as if no free-tier information
-  //       is available yet and await the next Pong.
-  //
   //   cutoff <= now
   //       Free-tier client past the free window—cut off. Render
   //       "free in X" using `cooldown` (see below).
   //
-  //   now < cutoff < SENTINEL
-  //       Three sub-cases:
+  //   cutoff > now
+  //       Two sub-cases:
   //
   //       a) Paid client (lease.ends > now):
   //          cutoff == lease.ends. The free-tier line is irrelevant;
@@ -237,15 +236,11 @@ message Pong {
   //          (cutoff - now) is the remaining time — render
   //          "free for X more".
   //
-  //       c) Free-tier placeholder (should not happen in practice
-  //          after the initial loading Pong, but client handles it
-  //          the same as b).
-  //
-  // Protocol constant — clients MUST compare against the exact
-  // sentinel value (UINT64_MAX / 0xFFFFFFFFFFFFFFFF) rather than
-  // using a range check, so that a genuine paid-plan timestamp
-  // (which may be years into the future) is never mistaken for the
-  // loading placeholder.
+  // The field carries no meaning while `lease` is unset. The Node
+  // parks the cutoff a year ahead in that window so that a client
+  // renders nothing alarming, but a client MUST check has_lease
+  // first and await the next Pong rather than read the placeholder
+  // as a free window of its own.
   uint64 cutoff = 15;
 
   // Fixed Unix timestamp (seconds) at which the client may next use
@@ -262,9 +257,9 @@ message Pong {
   //   * now >= cooldown: the cooldown has elapsed; render "try to
   //     connect anyway".
   //
-  // When cutoff == SENTINEL (UINT64_MAX) or the client is paid
-  // (lease.ends > now), cooldown is also set to UINT64_MAX and
-  // carries no meaning.
+  // When the client is paid (lease.ends > now), or `lease` is unset
+  // because the Hub record is still unread, cooldown carries no
+  // meaning.
   uint64 cooldown = 17;
 
   // Free-form Node-side metrics surfaced to the client for
