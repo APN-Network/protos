@@ -300,10 +300,10 @@ message Pong {
   // stores refuse to take money — Google Play and App Store billing
   // is unavailable there — so the client SHOULD offer card and crypto
   // checkout on the website beside, or instead of, its store button.
-  // The Node owns the list; clients MUST NOT hardwire one. False
-  // means either an unsanctioned country, an unresolved address, or
-  // a Node that predates this field, and a client MUST treat all
-  // three the same.
+  // The Hub owns the list and hands it to every Node; clients MUST
+  // NOT hardwire one. False means either an unsanctioned country, an
+  // unresolved address, or a Node that predates this field, and a
+  // client MUST treat all three the same.
   bool sanctioned = 21;
 
   // The page of the country whitelist the client is missing, see
