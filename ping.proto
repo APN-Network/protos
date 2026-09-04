@@ -22,6 +22,34 @@ message Edition {
   uint32 count = 3;
 }
 
+// Gesture is one interaction a person had with the app's own
+// interface: a tap on a named control, how long before this Ping it
+// happened, and a short detail saying what the tap was about. Clients
+// record gestures silently and report them here, so that the Hub can
+// learn which parts of the interface people actually use.
+message Gesture {
+  // Name of the control that was touched, in dotted form
+  // ("intent.on", "server.pick", "prefs.turn"), drawn from a closed
+  // vocabulary the clients share. At most 32 bytes of printable ASCII.
+  // The Node MUST discard a gesture whose name is empty, longer than
+  // that, or carries a byte outside that range.
+  string name = 1;
+
+  // How long before this Ping was prepared the interaction happened,
+  // in milliseconds. The Node subtracts it from its own clock to date
+  // the gesture, so that a client whose clock is wrong or dishonest
+  // cannot misplace the gesture in time. Zero means "just now", which
+  // is a valid reading and MUST be recorded.
+  uint32 age = 2;
+
+  // What the interaction was about, when the name alone does not say
+  // it: a country code ("NL"), an offer identifier, or a knob and its
+  // new position ("reconnect=on"). At most 64 bytes of printable
+  // ASCII, and never text a person typed. Empty means the name says
+  // everything, which is the common case.
+  string detail = 3;
+}
+
 // Ping is sent by the client at a regular interval (a few seconds)
 // to keep the tunnel alive, drive RTT measurement, and piggyback
 // reachability reports about peer Nodes. The Node answers each Ping
@@ -66,4 +94,16 @@ message Ping {
   // Absent when the client predates this field or keeps split
   // tunneling off, and then the Node MUST NOT send Pong.whitelist.
   Edition whitelist = 4;
+
+  // Interactions the person had with the app's interface since the
+  // previous report, oldest first. A client MUST NOT put more than
+  // eight of them in one Ping: the Node drops a frame above its
+  // 2048-byte ceiling outright instead of truncating it, so an
+  // overlong Ping is lost together with everything else it carried. A
+  // client holding more SHOULD send eight here and keep the rest for
+  // the Pings that follow, and MUST forget the ones it reported only
+  // once the Ping carrying them has left. Empty means the client
+  // predates this field or has nothing to report, and then the Node
+  // MUST record no gesture at all.
+  repeated Gesture gestures = 5;
 }
