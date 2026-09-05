@@ -21,4 +21,31 @@ Every change to a message has to land together with the code
 If you spot a mistake or a weakness in the protocol,
   open an issue and describe it — that is the feedback we want.
 
+## Addresses
+
+An address the client dials, or writes onto its own interface,
+  is raw bytes in network byte order —
+  four for IPv4, sixteen for IPv6.
+`Welcome.ip`, `Welcome.home` and `Peer.ip` are the shape to copy.
+
+A prefix stays text in CIDR form,
+  because it carries a length beside the address
+  and because one list mixes both families:
+  see `Whitelist.prefixes` and `Welcome.subnet`.
+
+A map key stays text whatever it names,
+  since proto3 allows only integral and string keys.
+That is why `Ping.canaries` is keyed by a dotted address
+  and asks the client to convert `Peer.ip` before inserting it.
+
+Two fields predate this rule and contradict it.
+`Owned.ip` is dotted text although the client dials it,
+  and `Welcome.dns` is textual although the client hands it
+  to its own resolver configuration.
+Both stay as they are,
+  because every client already speaks them
+  and rewriting the wire would buy no behaviour.
+
+A new field that departs from the rule must say why in its comment.
+
 [Protocol Buffers]: https://protobuf.dev/
