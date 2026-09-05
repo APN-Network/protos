@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 APN
+# SPDX-License-Identifier: MIT
+---
+version: v2
+lint:
+  use:
+    - STANDARD
+  except:
+    # Files sit at the repository root because consumers mount this
+    # repository itself as their proto directory
+    - PACKAGE_DIRECTORY_MATCH
+    # "proto.v1" would rename the generated namespace in all five consumers
+    - PACKAGE_VERSION_SUFFIX
+    # "STATUS_OK" would rename generated symbols in all five consumers
+    - ENUM_VALUE_PREFIX
+    # Status.OK is the wire truth, not an "unspecified" placeholder
+    - ENUM_ZERO_VALUE_SUFFIX
+breaking:
+  use:
+    - FILE

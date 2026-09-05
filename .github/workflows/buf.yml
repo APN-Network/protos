@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 APN
+# SPDX-License-Identifier: MIT
+---
+# yamllint disable rule:line-length
+name: buf
+'on':
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+concurrency:
+  group: buf-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    timeout-minutes: 15
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: bufbuild/buf-setup-action@v1
+      - run: buf lint
+  breaking:
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 15
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: bufbuild/buf-setup-action@v1
+      - run: buf breaking --against '.git#branch=master'
