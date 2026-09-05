@@ -24,13 +24,17 @@ message Auth {
 
   // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp ||
   // nonce), with the nonce omitted when it is empty, computed with
-  // the pre-shared key issued to this client. Proves possession of
-  // the PSK without revealing it. Receivers MUST assert
-  // len(hmac) == 12 and reject the Auth before performing any
-  // comparison; a shorter or absent value weakens authentication
-  // non-deterministically across implementations. Implementations
-  // MUST also verify client_id is exactly 9 bytes before computing
-  // or checking this tag.
+  // the pre-shared key issued to this client. The input is a raw
+  // byte string, not a serialised message: nine bytes of client_id,
+  // then the three low-order bytes of timestamp in big-endian
+  // order, then the twelve bytes of nonce when it is present. That
+  // is twelve bytes signed without a nonce and twenty-four with
+  // one. Proves possession of the PSK without revealing it.
+  // Receivers MUST assert len(hmac) == 12 and reject the Auth
+  // before performing any comparison; a shorter or absent value
+  // weakens authentication non-deterministically across
+  // implementations. Implementations MUST also verify client_id is
+  // exactly 9 bytes before computing or checking this tag.
   bytes hmac = 3;
 
   // Free-form device label reported by the client (e.g. "SM-G998B",
