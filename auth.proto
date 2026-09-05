@@ -15,15 +15,18 @@ message Auth {
   // secure RNG and persists it across launches.
   bytes client_id = 1;
 
-  // Minutes since the project epoch (2024-01-01 UTC), used as a
-  // replay-prevention nonce. The Node accepts the message only if
-  // this value is within one minute of its own clock.
+  // Minutes since the project epoch (2024-01-01 UTC), bounding how
+  // stale the frame may be. The Node accepts the message only if
+  // this value is within one minute of its own clock; on its own it
+  // does not prevent a replay inside that window, which is what the
+  // nonce is for.
   uint32 timestamp = 2;
 
-  // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp),
-  // computed with the pre-shared key issued to this client. Proves
-  // possession of the PSK without revealing it. Receivers MUST
-  // assert len(hmac) == 12 and reject the Auth before performing any
+  // Truncated HMAC-SHA256 (12 bytes) over (client_id || timestamp ||
+  // nonce), with the nonce omitted when it is empty, computed with
+  // the pre-shared key issued to this client. Proves possession of
+  // the PSK without revealing it. Receivers MUST assert
+  // len(hmac) == 12 and reject the Auth before performing any
   // comparison; a shorter or absent value weakens authentication
   // non-deterministically across implementations. Implementations
   // MUST also verify client_id is exactly 9 bytes before computing
@@ -69,4 +72,13 @@ message Auth {
   // used for authentication. MUST NOT exceed 64 bytes; the Node
   // truncates anything longer.
   string campaign = 9;
+
+  // Twelve random bytes, drawn afresh for every Auth frame and signed
+  // by the HMAC together with client_id and timestamp. The Node keeps
+  // the values it has seen lately and rejects a repeat, so a captured
+  // frame cannot be replayed while its timestamp is still inside the
+  // window. Empty means the client signs (client_id || timestamp)
+  // alone, as older builds do; the Node then falls back to the
+  // timestamp window and accepts the frame.
+  bytes nonce = 10;
 }
