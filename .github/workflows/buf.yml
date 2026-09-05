@@ -30,4 +30,4 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bufbuild/buf-setup-action@v1
-      - run: buf breaking --against '.git#branch=master'
+      - run: buf breaking --against '.git#branch=origin/master'
