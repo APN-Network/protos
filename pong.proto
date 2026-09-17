@@ -320,4 +320,14 @@ message Pong {
   // version; absent otherwise, so the client keeps what it holds. A
   // Node that predates this field never sets it.
   Whitelist whitelist = 20;
+
+  // Length of the free-tier window, in seconds: how long a client
+  // with no lease may stay connected inside each rolling hour
+  // before `cutoff` stops it. The Hub owns the number and hands the
+  // same one to every Node, so a client MUST NOT hardwire it; the
+  // clients quote it in the pitch they show before a purchase.
+  // Zero means a Node that predates this field, and a client MUST
+  // then word the pitch without a figure rather than read the zero
+  // as "no free time at all".
+  uint64 slack = 22;
 }
