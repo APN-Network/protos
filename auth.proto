@@ -86,4 +86,34 @@ message Auth {
   // alone, as older builds do; the Node then falls back to the
   // timestamp window and accepts the frame.
   bytes nonce = 10;
+  // Proof from the platform that this frame comes from our genuine,
+  // store-signed app, so that a repackaged copy cannot claim a free
+  // trial under a client_id it made up. Absent when the platform
+  // offers no such proof or the client failed to obtain one; the
+  // Node MUST accept the frame anyway and leave the decision to the
+  // Hub.
+  Voucher voucher = 11;
+}
+
+// Voucher carries one platform attestation, bound to the Auth frame
+// it travels in. The client computes the binding as SHA-256 over the
+// exact bytes the HMAC signs (client_id || timestamp || nonce), so a
+// voucher captured from one frame is worthless under another
+// client_id or after the nonce has been seen. The Node does not
+// interpret the voucher; it forwards kind, blob and that digest to
+// the Hub, which verifies them offline. A serialised Voucher MUST NOT
+// exceed 8192 bytes; the Node SHOULD enforce this as a raw-wire
+// length check, as it does for Auth.padding.
+message Voucher {
+  // Format of the blob: "play" is a Google Play Integrity token whose
+  // requestHash is the binding digest; "attest" is an Apple App
+  // Attest attestation object whose clientDataHash is the digest,
+  // sent until the Hub has recorded the key; "assert" is an App
+  // Attest assertion over the digest, made with that recorded key.
+  // Receivers MUST treat an unknown kind as an absent voucher.
+  string kind = 1;
+  // The platform's attestation, opaque to everyone but the Hub.
+  // For "attest" and "assert" the App Attest key identifier is not
+  // included separately; the Hub finds the key by client_id.
+  bytes blob = 2;
 }
