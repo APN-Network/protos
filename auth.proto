@@ -95,22 +95,28 @@ message Auth {
   Voucher voucher = 11;
 }
 
-// Voucher carries one platform attestation, bound to the Auth frame
-// it travels in. The client computes the binding as SHA-256 over the
-// exact bytes the HMAC signs (client_id || timestamp || nonce), so a
-// voucher captured from one frame is worthless under another
-// client_id or after the nonce has been seen. The Node does not
-// interpret the voucher; it forwards kind, blob and that digest to
-// the Hub, which verifies them offline. A serialised Voucher MUST NOT
+// Voucher carries one platform attestation. Apple vouchers are bound
+// to the Auth frame they travel in: the client computes the binding
+// as SHA-256 over the exact bytes the HMAC signs (client_id ||
+// timestamp || nonce), so such a voucher is worthless under another
+// client_id or after the nonce has been seen. Google Play and Huawei
+// vouchers are slow to obtain, so the client fetches one per install
+// and keeps it; they are bound to client_id alone, through SHA-256
+// over its ASCII bytes. The Node does not interpret the voucher; it
+// forwards kind, blob and the frame digest to the Hub, which
+// verifies them offline. A serialised Voucher MUST NOT
 // exceed 8192 bytes; the Node SHOULD enforce this as a raw-wire
 // length check, as it does for Auth.padding.
 message Voucher {
-  // Format of the blob: "play" is a Google Play Integrity token whose
-  // requestHash is the binding digest; "attest" is an Apple App
-  // Attest attestation object whose clientDataHash is the digest,
-  // sent until the Hub has recorded the key; "assert" is an App
-  // Attest assertion over the digest, made with that recorded key.
-  // Receivers MUST treat an unknown kind as an absent voucher.
+  // Format of the blob: "play" is a classic Google Play Integrity
+  // token whose nonce is the URL-safe Base64, without padding, of
+  // SHA-256 over client_id; "huawei" is a Huawei Safety Detect
+  // SysIntegrity JWS whose nonce is that same SHA-256, in raw bytes;
+  // "attest" is an Apple App Attest attestation object whose
+  // clientDataHash is the frame digest, sent until the Hub has
+  // recorded the key; "assert" is an App Attest assertion over the
+  // frame digest, made with that recorded key. Receivers MUST treat
+  // an unknown kind as an absent voucher.
   string kind = 1;
   // The platform's attestation, opaque to everyone but the Hub.
   // For "attest" and "assert" the App Attest key identifier is not
