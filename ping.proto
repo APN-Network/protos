@@ -4,6 +4,19 @@
 syntax = "proto3";
 package proto;
 
+// Time units. The protocol deliberately uses three distinct time
+// conventions and never mixes them in arithmetic, so implementors
+// MUST read each field's unit from the table below and NEVER assume
+// two timestamp-like fields share one:
+//
+//   minutes   since 2024-01-01 UTC — Auth.timestamp only
+//   seconds   since Unix epoch      — every other time field
+//   millis    since Unix epoch      — Ping.timestamp, Pong.timestamp
+//
+// Mixing units (e.g. Pong.cutoff - Pong.timestamp) yields a value in
+// a meaningless hybrid unit; proto3 offers no type-level guard, so
+// the units are a protocol contract, not a suggestion.
+
 // Edition names the split-tunnel whitelist a client holds: which
 // country's list, which Hub version of it, and how many of its
 // prefixes have arrived so far. The Node pages the rest from `count`.
